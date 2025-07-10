@@ -19,6 +19,7 @@ import WatchList from './components/WatchList';
 import SomeComponent from "./components/SomeComponent";
 import Auth from "./Pages/Auth";
 import User from "./Pages/User";
+import Awatch from "./components/Awatch";
 function App() {
   const [mode, setmode] = useState('light')
   const toggleMode = () => {
@@ -57,6 +58,7 @@ function App() {
           <Route path="/User" element={<User />} />
           <Route path="/movie/:id" element={<CardDetails />} />
           <Route path="/tv/:id" element={<CardDetails1 />} />
+          <Route path="/anime/:id" element={<Awatch />} />
           <Route path="/recommendations" component={Recommendations} />
           <Route path="/watchlist" component={WatchList} />
         </Routes>

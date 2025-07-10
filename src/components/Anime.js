@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
 import Card from 'react-bootstrap/Card';
-import Form from 'react-bootstrap/Form';
-import { query } from 'firebase/database';
+// import Form from 'react-bootstrap/Form';
+// import { query } from 'firebase/database';
 
 const FilterBar = ({ filters, handleChange, handleGenreChange, handleSubmit }) => {
     const movieGenres = [

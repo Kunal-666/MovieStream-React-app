@@ -1,10 +1,12 @@
 import React from 'react'
-import AnimeHome from '../components/Anime'
+// import AnimeHome from '../components/Anime'
+import Animes from '../components/Animes'
 
 function India() {
     return (
         <div>
-            <AnimeHome />
+            <Animes />
+            {/* <AnimeHome /> */}
         </div>
     )
 }

@@ -35,7 +35,7 @@ const CardDetails = () => {
                     if (currentUser) {
                         handleAdd({ id: `${id}`, type: 'movie', genres: genres });
                     }
-                    
+
                 } else {
                     throw new Error('Failed to fetch movie details');
                 }
@@ -107,7 +107,7 @@ const CardDetails = () => {
                         <h3 className="text-center text-primary">{title}</h3>
                         <div className="video-wrapper mb-4">
                             <iframe
-                                src={`https://vidsrc.me/embed/movie?tmdb=${id}`}
+                                src={`https://vidsrc.site/embed/movie?tmdb=${id}`}
                                 width="100%"
                                 height="360"
                                 title="Video"

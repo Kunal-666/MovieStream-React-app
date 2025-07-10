@@ -129,7 +129,7 @@ const CardDetails1 = () => {
                             <h3 className="text-center text-primary">{tvShowDetails.name}</h3>
                             <div className="video-wrapper mb-4">
                                 <iframe
-                                    src={`https://vidsrc.to/embed/tv/${id}/${Season}/${Episode}`}
+                                    src={`https://vidsrc.top/embed/tv/${id}/${Season}/${Episode}`}
                                     width="100%"
                                     height="360"
                                     title="Video"
