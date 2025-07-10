@@ -1,40 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-// import './anlatest.css'; // Ensure you create and import this CSS file
 import Card from 'react-bootstrap/Card';
-
-// const ReadMore = ({ text, maxWords }) => {
-//     const words = String(text).split(' ');
-//     const truncatedText = words.slice(0, maxWords).join(' ');
-//     const remainingText = words.slice(maxWords).join(' ');
-//     const [showMore, setShowMore] = useState(false);
-
-//     const toggleReadMore = () => {
-//         setShowMore(!showMore);
-//     };
-
-//     return (
-//         <div className="read-more">
-//             {showMore ? (
-//                 <div>
-//                     {truncatedText} {remainingText}
-//                     <button className="read-more-button" onClick={toggleReadMore}>
-//                         Read less
-//                     </button>
-//                 </div>
-//             ) : (
-//                 <div>
-//                     {truncatedText}
-//                     {remainingText && (
-//                         <button className="read-more-button" onClick={toggleReadMore}>
-//                             Read More
-//                         </button>
-//                     )}
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
 
 const FilterBar = ({ filters, handleChange, handleSubmit }) => {
     return (
@@ -58,7 +24,6 @@ const FilterBar = ({ filters, handleChange, handleSubmit }) => {
                 <option value="10768">War & Politics</option>
                 <option value="37">Western</option>
                 <option value="16">Anime</option>
-                {/* Add more genres as needed */}
             </select>
             <select name="year" value={filters.year} onChange={handleChange}>
                 <option value="">All Years</option>
@@ -73,14 +38,7 @@ const FilterBar = ({ filters, handleChange, handleSubmit }) => {
                 <option value="en">English</option>
                 <option value="es">Spanish</option>
                 <option value="fr">French</option>
-                {/* Add more languages as needed */}
             </select>
-            {/* <select name="country" value={filters.country} onChange={handleChange}>
-                <option value="">All Countries</option>
-                <option value="US">United States</option>
-                <option value="IN">India</option>
-                <option value="FR">France</option>
-            </select> */}
             <select name="sort" value={filters.sort} onChange={handleChange}>
                 <option value="">Sort By</option>
                 <option value="popularity.desc">Most Popular</option>
@@ -101,6 +59,9 @@ const Anlatest = () => {
         country: '',
         sort: ''
     });
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [genres, setGenres] = useState({});
 
     const getMovies = () => {
         const { genre, year, language, country, sort } = filters;
@@ -109,18 +70,25 @@ const Anlatest = () => {
             year && `first_air_date_year=${year}`,
             language && `with_original_language=${language}`,
             country && `region=${country}`,
-            sort && `sort_by=${sort}`
+            sort && `sort_by=${sort}`,
+            `page=${page}`
         ].filter(Boolean).join('&');
 
         fetch(`https://api.themoviedb.org/3/discover/tv?api_key=0d0f1379d0c8b95596f350605ec7f984&${query}`)
             .then(res => res.json())
-            .then(json => setMovieList(json.results));
+            .then(json => {
+                setMovieList(json.results);
+                setTotalPages(json.total_pages > 500 ? 500 : json.total_pages);
+            });
     };
 
     useEffect(() => {
         fetchGenres();
+    }, []);
+
+    useEffect(() => {
         getMovies();
-    }, [filters]);
+    }, [filters, page]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -128,13 +96,14 @@ const Anlatest = () => {
             ...filters,
             [name]: value
         });
+        setPage(1);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setPage(1);
         getMovies();
     };
-    const [genres, setGenres] = useState({});
 
     const fetchGenres = async () => {
         const responses = await Promise.all([
@@ -150,8 +119,55 @@ const Anlatest = () => {
 
         setGenres(genresMap);
     };
+
     const getGenreNames = (genreIds) => genreIds.map(id => genres[id]).join(', ');
 
+    const renderPagination = () => {
+        const pageButtons = [];
+        const maxVisiblePages = 10;
+        const startPage = Math.max(1, page - 4);
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (startPage > 1) {
+            pageButtons.push(<button key={1} onClick={() => setPage(1)}>1</button>);
+        }
+
+        if (startPage > 2) {
+            pageButtons.push(<span key="start-ellipsis">...</span>);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageButtons.push(
+                <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className={i === page ? 'active' : ''}
+                >
+                    {i}
+                </button>
+            );
+        }
+
+        if (endPage < totalPages - 1) {
+            pageButtons.push(<span key="end-ellipsis">...</span>);
+        }
+
+        if (endPage < totalPages) {
+            pageButtons.push(<button key={totalPages} onClick={() => setPage(totalPages)}>{totalPages}</button>);
+        }
+
+        return (
+            <div className="pagination-controls">
+                <button onClick={() => setPage(prev => Math.max(prev - 1, 1))} disabled={page === 1}>
+                    Previous
+                </button>
+                {pageButtons}
+                <button onClick={() => setPage(prev => Math.min(prev + 1, totalPages))} disabled={page === totalPages}>
+                    Next
+                </button>
+            </div>
+        );
+    };
 
     return (
         <div>
@@ -171,6 +187,7 @@ const Anlatest = () => {
                     </Card>
                 ))}
             </div>
+            {renderPagination()}
         </div>
     );
 };

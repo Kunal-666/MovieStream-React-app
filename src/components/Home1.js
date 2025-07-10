@@ -1,42 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-// import Carousel from 'react-bootstrap/Carousel';
 import Container from 'react-bootstrap/Container';
 import Card from 'react-bootstrap/Card';
-// import './home1.css'; // Ensure you create and import this CSS file
 
-// const ReadMore = ({ text, maxWords }) => {
-//     const words = String(text).split(' ');
-//     const truncatedText = words.slice(0, maxWords).join(' ');
-//     const remainingText = words.slice(maxWords).join(' ');
-//     const [showMore, setShowMore] = useState(false);
-
-//     const toggleReadMore = () => {
-//         setShowMore(!showMore);
-//     };
-
-//     return (
-//         <div className="read-more">
-//             {showMore ? (
-//                 <div>
-//                     {truncatedText} {remainingText}
-//                     <button className="read-more-button" onClick={toggleReadMore}>
-//                         Read less
-//                     </button>
-//                 </div>
-//             ) : (
-//                 <div>
-//                     {truncatedText}
-//                     {remainingText && (
-//                         <button className="read-more-button" onClick={toggleReadMore}>
-//                             Read More
-//                         </button>
-//                     )}
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
 
 const FilterBar = ({ filters, handleChange, handleSubmit }) => {
     return (
@@ -76,6 +42,8 @@ const FilterBar = ({ filters, handleChange, handleSubmit }) => {
 };
 
 function Home1() {
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [list, setList] = useState([]);
     const [filters, setFilters] = useState({
         type: 'movie',
@@ -91,18 +59,29 @@ function Home1() {
             genre && `with_genres=${genre}`,
             year && `primary_release_year=${year}`,
             language && `with_original_language=${language}`,
-            sort && `sort_by=${sort}`
+            sort && `sort_by=${sort}`,
+            `page=${page}`
         ].filter(Boolean).join('&');
+
 
         fetch(`https://api.themoviedb.org/3/discover/${type}?api_key=0d0f1379d0c8b95596f350605ec7f984&${query}`)
             .then(res => res.json())
-            .then(json => setList(json.results));
+            .then(json => {
+                setList(json.results)
+                setTotalPages(json.total_pages > 500 ? 500 : json.total_pages);
+
+            });
+
     };
 
     useEffect(() => {
-        fetchGenres();
         getItems();
-    }, [filters]);
+    }, [filters, page]);
+
+    useEffect(() => {
+        fetchGenres();
+    }, []);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -114,15 +93,11 @@ function Home1() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setPage(1);
         getItems();
     };
 
-    // const reduceRecipes = (acc, cur, index) => {
-    //     const groupIndex = Math.floor(index / 4);
-    //     if (!acc[groupIndex]) acc[groupIndex] = [];
-    //     acc[groupIndex].push(cur);
-    //     return acc;
-    // };
+
     const [genres, setGenres] = useState({});
 
     const fetchGenres = async () => {
@@ -140,7 +115,52 @@ function Home1() {
         setGenres(genresMap);
     };
     const getGenreNames = (genreIds) => genreIds.map(id => genres[id]).join(', ');
+    const renderPagination = () => {
+        const pageButtons = [];
+        const maxVisiblePages = 10;
+        const startPage = Math.max(1, page - 4);
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
+        if (startPage > 1) {
+            pageButtons.push(<button key={1} onClick={() => setPage(1)}>1</button>);
+        }
+
+        if (startPage > 2) {
+            pageButtons.push(<span key="start-ellipsis">...</span>);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageButtons.push(
+                <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className={i === page ? 'active' : ''}
+                >
+                    {i}
+                </button>
+            );
+        }
+
+        if (endPage < totalPages - 1) {
+            pageButtons.push(<span key="end-ellipsis">...</span>);
+        }
+
+        if (endPage < totalPages) {
+            pageButtons.push(<button key={totalPages} onClick={() => setPage(totalPages)}>{totalPages}</button>);
+        }
+
+        return (
+            <div className="pagination-controls">
+                <button onClick={() => setPage(prev => Math.max(prev - 1, 1))} disabled={page === 1}>
+                    Previous
+                </button>
+                {pageButtons}
+                <button onClick={() => setPage(prev => Math.min(prev + 1, totalPages))} disabled={page === totalPages}>
+                    Next
+                </button>
+            </div>
+        );
+    };
     return (
         <div>
             <h1 className="title">Indian Movies and TV Shows</h1>
@@ -163,6 +183,8 @@ function Home1() {
                     </Card>
                 ))}
             </div>
+            {renderPagination()}
+
         </div>
     );
 }

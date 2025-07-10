@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import { Row, Col, ButtonGroup, Button } from 'react-bootstrap';
+
 import Card from 'react-bootstrap/Card';
 import Spinner from 'react-bootstrap/Spinner';
 import './tv.css';
@@ -17,7 +17,8 @@ const CardDetails = () => {
     const [relatedMovies, setRelatedMovies] = useState([]);
     const [movieDetails, setMovieDetails] = useState(null);
     const { id } = useParams();
-
+    const servers = ['vidsrc.in', 'vidsrc.pm', 'vidsrc.xyz', 'vidsrc.net', 'vidsrc.icu', 'vidsrc.to'];
+    const [selectedServer, setSelectedServer] = useState(servers[0]);
     const handleAdd = async (item) => {
         await addToWatchList(currentUser.uid, item);
         setWatchList([...watchList, item]);
@@ -107,12 +108,27 @@ const CardDetails = () => {
                         <h3 className="text-center text-primary">{title}</h3>
                         <div className="video-wrapper mb-4">
                             <iframe
-                                src={`https://vidsrc.site/embed/movie?tmdb=${id}`}
+                                src={`https://${selectedServer}/embed/movie?tmdb=${id}`}
                                 width="100%"
                                 height="360"
                                 title="Video"
                                 allowFullScreen
                             />
+                        </div>
+                        <div className="text-center mb-3">
+                            <ButtonGroup>
+                                {servers.map((server, index) => (
+                                    <Button
+                                        key={server}
+                                        variant={server === selectedServer ? 'primary' : 'outline-primary'}
+                                        onClick={() => setSelectedServer(server)}
+                                        size="sm"
+                                    >
+                                        {`Server ${index + 1}`}
+                                    </Button>
+                                ))}
+
+                            </ButtonGroup>
                         </div>
                     </Col>
                 </Row>

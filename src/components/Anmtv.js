@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import { Row, Col, ButtonGroup, Button } from 'react-bootstrap';
+
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Spinner from 'react-bootstrap/Spinner';
@@ -119,7 +119,8 @@ const CardDetails1 = () => {
     for (let i = 1; i <= (tvShowDetails?.number_of_seasons || 1); i++) {
         seasonOptions.push(<option key={i} value={i}>{i}</option>);
     }
-
+    const servers = ['vidsrc.in', 'vidsrc.pm', 'vidsrc.xyz', 'vidsrc.net', 'vidsrc.icu', 'vidsrc.to'];
+    const [selectedServer, setSelectedServer] = useState(servers[0]);
     return (
         <Container className="mt-4">
             {tvShowDetails ? (
@@ -129,12 +130,27 @@ const CardDetails1 = () => {
                             <h3 className="text-center text-primary">{tvShowDetails.name}</h3>
                             <div className="video-wrapper mb-4">
                                 <iframe
-                                    src={`https://vidsrc.top/embed/tv/${id}/${Season}/${Episode}`}
+                                    src={`https://${selectedServer}/embed/tv/${id}/${Season}/${Episode}`}
                                     width="100%"
                                     height="360"
                                     title="Video"
                                     allowFullScreen
                                 />
+                            </div>
+                            <div className="text-center mb-3">
+                                <ButtonGroup>
+                                    {servers.map((server, index) => (
+                                        <Button
+                                            key={server}
+                                            variant={server === selectedServer ? 'primary' : 'outline-primary'}
+                                            onClick={() => setSelectedServer(server)}
+                                            size="sm"
+                                        >
+                                            {`Server ${index + 1}`}
+                                        </Button>
+                                    ))}
+
+                                </ButtonGroup>
                             </div>
                         </Col>
                     </Row>

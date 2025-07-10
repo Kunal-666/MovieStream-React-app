@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
 import Card from 'react-bootstrap/Card';
-// import Form from 'react-bootstrap/Form';
-// import { query } from 'firebase/database';
 
 const FilterBar = ({ filters, handleChange, handleGenreChange, handleSubmit }) => {
     const movieGenres = [
@@ -48,12 +46,9 @@ const FilterBar = ({ filters, handleChange, handleGenreChange, handleSubmit }) =
         { value: "release_date.desc", label: "Newest First" },
         { value: "release_date.asc", label: "Oldest First" }
     ];
-    
+
     const sort = filters.type === 'movie' ? moviesort : tvsort;
-
-
     const genres = filters.type === 'movie' ? movieGenres : tvGenres;
-
 
     const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
 
@@ -62,58 +57,51 @@ const FilterBar = ({ filters, handleChange, handleGenreChange, handleSubmit }) =
     };
 
     return (
-        <div>
-
-
-            <form className="filter-bar" onSubmit={handleSubmit}>
-                <select name="type" value={filters.type} onChange={handleChange}>
-                    <option value="movie">Movie</option>
-                    <option value="tv">TV Show</option>
-                </select>
-                <div className="dropdown">
-                    <button type="button" onClick={toggleGenreDropdown}>
-                        Select Genres
-                    </button>
-                    {isGenreDropdownOpen && (
-                        <div className="dropdown-content">
-                            {genres.map((genre) => (
-                                <div key={genre.value}>
-                                    <input
-                                        type="checkbox"
-                                        id={genre.value}
-                                        name="genre"
-                                        value={genre.value}
-                                        checked={filters.genre.includes(genre.value)}
-                                        onChange={handleGenreChange}
-                                    />
-                                    <label htmlFor={genre.value}>{genre.label}</label>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                <select name="year" value={filters.year} onChange={handleChange}>
-                    <option value="">All Years</option>
-                    {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                        <option key={year} value={year}>{year}</option>
-                    ))}
-                </select>
-                <select name="language" value={filters.language} onChange={handleChange}>
-                    <option value="">All Languages</option>
-                    <option value="ja">Japanese</option>
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                </select>
-                <select name="sort" value={filters.sort} onChange={handleChange}>
-                    <option value="">Sort By</option>
-                    {sort.map((sort) => (
-                        <option key={sort.value} value={sort.value}>{sort.label}</option>
-                    ))}
-
-                </select>
-                <button type="submit">Apply Filters</button>
-            </form>
-        </div>
+        <form className="filter-bar" onSubmit={handleSubmit}>
+            <select name="type" value={filters.type} onChange={handleChange}>
+                <option value="movie">Movie</option>
+                <option value="tv">TV Show</option>
+            </select>
+            <div className="dropdown">
+                <button type="button" onClick={toggleGenreDropdown}>Select Genres</button>
+                {isGenreDropdownOpen && (
+                    <div className="dropdown-content">
+                        {genres.map((genre) => (
+                            <div key={genre.value}>
+                                <input
+                                    type="checkbox"
+                                    id={genre.value}
+                                    name="genre"
+                                    value={genre.value}
+                                    checked={filters.genre.includes(genre.value)}
+                                    onChange={handleGenreChange}
+                                />
+                                <label htmlFor={genre.value}>{genre.label}</label>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+            <select name="year" value={filters.year} onChange={handleChange}>
+                <option value="">All Years</option>
+                {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                ))}
+            </select>
+            <select name="language" value={filters.language} onChange={handleChange}>
+                <option value="">All Languages</option>
+                <option value="ja">Japanese</option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+            </select>
+            <select name="sort" value={filters.sort} onChange={handleChange}>
+                <option value="">Sort By</option>
+                {sort.map((sort) => (
+                    <option key={sort.value} value={sort.value}>{sort.label}</option>
+                ))}
+            </select>
+            <button type="submit">Apply Filters</button>
+        </form>
     );
 };
 
@@ -121,12 +109,14 @@ function Home1() {
     const [list, setList] = useState([]);
     const [filters, setFilters] = useState({
         type: 'tv',
-        genre: ['16'], // Set default genre to Anime as an array
+        genre: ['16'],
         year: '',
-        language: 'ja', // Set default language to Japanese
+        language: 'ja',
         sort: '',
     });
     const [genres, setGenres] = useState({});
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     const getItems = () => {
         const { type, genre, year, language, sort } = filters;
@@ -134,25 +124,26 @@ function Home1() {
             genre.length > 0 && `with_genres=${genre.join(',')}`,
             year && `first_air_date_year=${year}`,
             language && `with_original_language=${language}`,
-            sort && `sort_by=${sort}`
+            sort && `sort_by=${sort}`,
+            `page=${page}`
         ].filter(Boolean).join('&');
 
         fetch(`https://api.themoviedb.org/3/discover/${type}?api_key=0d0f1379d0c8b95596f350605ec7f984&${query}`)
             .then(res => res.json())
-            .then(json => setList(json.results));
+            .then(json => {
+                setList(json.results);
+                setTotalPages(json.total_pages);
+            });
     };
 
     useEffect(() => {
         fetchGenres();
         getItems();
-    }, [filters]);
+    }, [filters, page]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFilters({
-            ...filters,
-            [name]: value
-        });
+        setFilters({ ...filters, [name]: value });
     };
 
     const handleGenreChange = (e) => {
@@ -161,15 +152,13 @@ function Home1() {
             const newGenres = checked
                 ? [...prevState.genre, value]
                 : prevState.genre.filter((genre) => genre !== value);
-            return {
-                ...prevState,
-                genre: newGenres
-            };
+            return { ...prevState, genre: newGenres };
         });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setPage(1);
         getItems();
     };
 
@@ -178,17 +167,68 @@ function Home1() {
             fetch('https://api.themoviedb.org/3/genre/movie/list?api_key=0d0f1379d0c8b95596f350605ec7f984').then(res => res.json()),
             fetch('https://api.themoviedb.org/3/genre/tv/list?api_key=0d0f1379d0c8b95596f350605ec7f984').then(res => res.json())
         ]);
-
         const allGenres = [...responses[0].genres, ...responses[1].genres];
         const genresMap = {};
         allGenres.forEach(genre => {
             genresMap[genre.id] = genre.name;
         });
-
         setGenres(genresMap);
     };
 
     const getGenreNames = (genreIds) => genreIds.map(id => genres[id]).join(', ');
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setPage(newPage);
+        }
+    };
+
+    const renderPagination = () => {
+        const pageButtons = [];
+        const maxVisiblePages = 10;
+        const startPage = Math.max(1, page - 4);
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (startPage > 1) {
+            pageButtons.push(<button key={1} onClick={() => setPage(1)}>1</button>);
+        }
+
+        if (startPage > 2) {
+            pageButtons.push(<span key="start-ellipsis">...</span>);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageButtons.push(
+                <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className={i === page ? 'active' : ''}
+                >
+                    {i}
+                </button>
+            );
+        }
+
+        if (endPage < totalPages - 1) {
+            pageButtons.push(<span key="end-ellipsis">...</span>);
+        }
+
+        if (endPage < totalPages) {
+            pageButtons.push(<button key={totalPages} onClick={() => setPage(totalPages)}>{totalPages}</button>);
+        }
+
+        return (
+            <div className="pagination-controls">
+                <button onClick={() => setPage(prev => Math.max(prev - 1, 1))} disabled={page === 1}>
+                    Previous
+                </button>
+                {pageButtons}
+                <button onClick={() => setPage(prev => Math.min(prev + 1, totalPages))} disabled={page === totalPages}>
+                    Next
+                </button>
+            </div>
+        );
+    };
 
     return (
         <div>
@@ -211,6 +251,7 @@ function Home1() {
                     </Card>
                 ))}
             </div>
+            {renderPagination()}
         </div>
     );
 }

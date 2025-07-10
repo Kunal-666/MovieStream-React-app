@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import './App.css';
 import About from './Pages/About';
 import BasicExample from './components/nav';
@@ -43,7 +43,7 @@ function App() {
   return (
     <><div className="App">
       <SomeComponent />
-      <BrowserRouter>
+      <HashRouter>
         <BasicExample mode={mode} toggleMode={toggleMode} />
         <Routes>
           <Route exact path="/" element={<Home />} />
@@ -62,7 +62,7 @@ function App() {
           <Route path="/recommendations" component={Recommendations} />
           <Route path="/watchlist" component={WatchList} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
       <footer className="footer mt-4">
         <Container>
           <Row className="justify-content-center text-center">

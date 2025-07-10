@@ -137,6 +137,7 @@ const Awatch = () => {
         </option>
     ));
 
+
     return (
         <Container className="mt-4">
             {animeDetails ? (
@@ -153,6 +154,7 @@ const Awatch = () => {
                                     allowFullScreen
                                 />
                             </div>
+
                         </Col>
                     </Row>
                     <Row className="mb-4 align-items-end">
